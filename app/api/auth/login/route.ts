@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { sql } from "@/lib/db"
 import { verifyPassword, createToken, setAuthCookie } from "@/lib/auth"
 import { loginSchema } from "@/lib/validations"
 
@@ -11,9 +11,14 @@ export async function POST(request: NextRequest) {
     const validatedData = loginSchema.parse(body)
 
     // Find user
-    const user = await prisma.user.findUnique({
-      where: { email: validatedData.email },
-    })
+    const users = await sql`
+      SELECT id, email, name, password, role
+      FROM users
+      WHERE email = ${validatedData.email}
+      LIMIT 1
+    `
+
+    const user = users[0]
 
     if (!user) {
       return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 })

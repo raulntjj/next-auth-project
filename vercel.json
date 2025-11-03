@@ -1,4 +1,4 @@
 {
   "installCommand": "npm i --force",
-  "buildCommand": "npx prisma migrate dev --name init && next build"
+  "buildCommand": "next build"
 }

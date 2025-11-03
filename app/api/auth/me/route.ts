@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
+import { sql } from "@/lib/db"
 
 export async function GET() {
   try {
@@ -10,15 +10,14 @@ export async function GET() {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      },
-    })
+    const users = await sql`
+      SELECT id, email, name, role
+      FROM users
+      WHERE id = ${session.userId}
+      LIMIT 1
+    `
+
+    const user = users[0]
 
     if (!user) {
       return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 })

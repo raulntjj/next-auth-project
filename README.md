@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Aplicativo Next.js com Banco de Dados Serverless
 
-## Getting Started
+Este aplicativo usa Next.js 16 com banco de dados serverless (Neon/Postgres) para funcionar tanto em desenvolvimento quanto em produção.
 
-First, run the development server:
+## Configuração do Banco de Dados
 
-```bash
+### 1. Criar Banco de Dados
+
+Você precisa de uma URL de conexão PostgreSQL. Opções recomendadas:
+- **Neon** (https://neon.tech) - Serverless Postgres gratuito
+- **Vercel Postgres** (https://vercel.com/storage/postgres)
+- **Supabase** (https://supabase.com)
+
+### 2. Configurar Variável de Ambiente
+
+Adicione a variável `DATABASE_URL` no seu projeto:
+
+**Para desenvolvimento local:**
+Crie um arquivo `.env.local`:
+\`\`\`
+DATABASE_URL=postgresql://user:password@host/database
+\`\`\`
+
+**Para produção (Vercel):**
+Adicione a variável de ambiente no dashboard da Vercel ou use:
+\`\`\`bash
+vercel env add DATABASE_URL
+\`\`\`
+
+### 3. Executar Scripts SQL
+
+Os scripts SQL estão na pasta `scripts/`:
+- `001-create-tables.sql` - Cria a tabela de usuários
+- `002-seed-admin.sql` - Adiciona usuários iniciais
+
+**Opção 1: Executar via v0 (recomendado)**
+Os scripts podem ser executados diretamente no v0.
+
+**Opção 2: Executar manualmente**
+Use o console SQL do seu provedor de banco de dados (Neon, Supabase, etc.) para executar os scripts na ordem.
+
+### 4. Usuários Padrão
+
+Após executar os scripts, você terá:
+- **Admin**: admin@example.com / admin123
+- **Usuário**: user@example.com / user123
+
+## Desenvolvimento
+
+\`\`\`bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deploy na Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Conecte seu repositório GitHub à Vercel
+2. Adicione a variável `DATABASE_URL` nas configurações do projeto
+3. Deploy automático!
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tecnologias
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 16 (App Router)
+- @neondatabase/serverless (SQL direto, sem ORM)
+- TypeScript
+- Tailwind CSS
+- shadcn/ui

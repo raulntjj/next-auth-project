@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { sql } from "@/lib/db"
 import { getSession } from "@/lib/auth"
 import { updateUserRoleSchema } from "@/lib/validations"
 
@@ -19,17 +19,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       role: body.role,
     })
 
-    const user = await prisma.user.update({
-      where: { id: validatedData.userId },
-      data: { role: validatedData.role },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-      },
-    })
+    const updatedUsers = await sql`
+      UPDATE users
+      SET role = ${validatedData.role}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${validatedData.userId}
+      RETURNING id, email, name, role, created_at as "createdAt"
+    `
+
+    const user = updatedUsers[0]
+
+    if (!user) {
+      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 })
+    }
 
     return NextResponse.json({ user })
   } catch (error) {
@@ -56,9 +57,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: "Você não pode deletar sua própria conta" }, { status: 400 })
     }
 
-    await prisma.user.delete({
-      where: { id },
-    })
+    await sql`
+      DELETE FROM users WHERE id = ${id}
+    `
 
     return NextResponse.json({ success: true })
   } catch (error) {

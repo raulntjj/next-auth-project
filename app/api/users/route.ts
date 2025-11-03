@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { sql } from "@/lib/db"
 import { getSession } from "@/lib/auth"
 import { hashPassword } from "@/lib/auth"
 import { createUserSchema } from "@/lib/validations"
@@ -12,18 +12,11 @@ export async function GET() {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 })
     }
 
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    })
+    const users = await sql`
+      SELECT id, email, name, role, created_at as "createdAt"
+      FROM users
+      ORDER BY created_at DESC
+    `
 
     return NextResponse.json({ users })
   } catch (error) {
@@ -43,11 +36,11 @@ export async function POST(request: NextRequest) {
     const validatedData = createUserSchema.parse(body)
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email },
-    })
+    const existingUsers = await sql`
+      SELECT id FROM users WHERE email = ${validatedData.email} LIMIT 1
+    `
 
-    if (existingUser) {
+    if (existingUsers.length > 0) {
       return NextResponse.json({ error: "Email já cadastrado" }, { status: 400 })
     }
 
@@ -55,21 +48,13 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await hashPassword(validatedData.password)
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        email: validatedData.email,
-        name: validatedData.name,
-        password: hashedPassword,
-        role: validatedData.role,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-      },
-    })
+    const newUsers = await sql`
+      INSERT INTO users (id, email, name, password, role)
+      VALUES (gen_random_uuid()::text, ${validatedData.email}, ${validatedData.name}, ${hashedPassword}, ${validatedData.role})
+      RETURNING id, email, name, role, created_at as "createdAt"
+    `
+
+    const user = newUsers[0]
 
     return NextResponse.json({ user }, { status: 201 })
   } catch (error) {

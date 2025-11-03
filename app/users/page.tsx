@@ -1,6 +1,6 @@
 import { getSession } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
+import { sql } from "@/lib/db"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -14,18 +14,11 @@ export default async function UsersPage() {
     redirect("/dashboard")
   }
 
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      createdAt: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  })
+  const users = await sql`
+    SELECT id, email, name, role, created_at as "createdAt"
+    FROM users
+    ORDER BY created_at DESC
+  `
 
   return (
     <div className="min-h-screen bg-slate-50">
