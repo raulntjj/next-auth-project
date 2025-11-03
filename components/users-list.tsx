@@ -11,10 +11,15 @@ type User = {
   email: string
   name: string
   role: string
-  createdAt: Date
+  created_at: Date
 }
 
-export function UsersList({ users, currentUserId }: { users: User[]; currentUserId: string }) {
+export interface UsersListProps {
+  users: any[]
+  currentUserId: string
+}
+
+export function UsersList({ users, currentUserId }: UsersListProps) {
   const router = useRouter()
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
