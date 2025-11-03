@@ -49,6 +49,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 })
     }
 
-    return NextResponse.json({ error: "Erro ao fazer login" }, { status: 500 })
+    return NextResponse.json({ error: "Erro ao fazer login", details: error }, { status: 500 })
   }
 }
