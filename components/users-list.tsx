@@ -5,19 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-
-type User = {
-  id: string
-  email: string
-  name: string
-  role: string
-  created_at: Date
-}
-
-export interface UsersListProps {
-  users: any[]
-  currentUserId: string
-}
+import { UsersListProps } from "@/lib/types"
 
 export function UsersList({ users, currentUserId }: UsersListProps) {
   const router = useRouter()

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { UsersList } from "@/components/users-list"
 import { CreateUserDialog } from "@/components/create-user-dialog"
+import { User } from "@/lib/types"
 
 export default async function UsersPage() {
   const session = await getSession()
@@ -14,11 +15,11 @@ export default async function UsersPage() {
     redirect("/dashboard")
   }
 
-  const users = await sql`
+  const users = (await sql` // Adiciona o cast para User[]
     SELECT id, email, name, role, created_at as "createdAt"
     FROM users
     ORDER BY created_at DESC
-  `
+  `) as User[]
 
   return (
     <div className="min-h-screen bg-slate-50">

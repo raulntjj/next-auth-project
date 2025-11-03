@@ -1,37 +1,41 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { loginSchema, type LoginFormData } from "@/lib/types"
+import { useState } from "react"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
   const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const onSubmit = async (data: LoginFormData) => {
     setError("")
-    setLoading(true)
 
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(data),
       })
 
-      const data = await response.json()
+      const result = await response.json()
 
       if (!response.ok) {
-        setError(data.error || "Erro ao fazer login")
+        setError(result.error || "Erro ao fazer login")
         return
       }
 
@@ -39,8 +43,6 @@ export default function LoginPage() {
       router.refresh()
     } catch (err) {
       setError("Erro ao conectar com o servidor")
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -52,18 +54,17 @@ export default function LoginPage() {
           <CardDescription className="text-center">Entre com suas credenciais para acessar o sistema</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
+                {...register("email")}
+                disabled={isSubmitting}
               />
+              {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
@@ -71,15 +72,14 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
+                {...register("password")}
+                disabled={isSubmitting}
               />
+              {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
             </div>
             {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</div>}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Entrando..." : "Entrar"}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Entrando..." : "Entrar"}
             </Button>
           </form>
           <div className="mt-6 p-4 bg-slate-50 rounded-md text-sm">

@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const user = users[0]
 
     if (!user) {
-      return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 })
+      return NextResponse.json({ error: "Credenciais inválidas 1" }, { status: 401 })
     }
 
     // Verify password
