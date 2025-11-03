@@ -1,4 +1,4 @@
 {
-  "installCommand": "npm install --force && npx prisma generate",
-  "buildCommand": "npx prisma migrate deploy && next build"
+  "installCommand": "npm i --force",
+  "buildCommand": "npx prisma generate && npx prisma migrate deploy && next build"
 }
